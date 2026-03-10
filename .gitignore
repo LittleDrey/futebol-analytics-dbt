@@ -1,0 +1,13 @@
+# Ambiente Virtual Python
+venv/
+__pycache__/
+
+#dbt e Logs
+target/
+dbt_packages/
+logs/
+*.log
+
+# Arquivos de Ambiente (Segurança)
+.env
+profiles.yml
