@@ -1,0 +1,17 @@
+# Mapeamento da Camada Silver, de onde os dados estão vindo
+# Conceito Aplicado: Data Lineage e Definição de Fontes (Sources)
+
+version: 2
+
+sources:
+  - name: silver
+    catalog: workspace_project
+    schema: silver
+    description: "Camada Silver contendo dados normalizados, tipados e higienizados"
+    tables:
+      - name: times
+      - name: torneios
+      - name: estadios
+      - name: jogadores
+      - name: partidas
+      - name: eventos

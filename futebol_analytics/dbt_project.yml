@@ -29,8 +29,17 @@ clean-targets:         # directories to be removed by `dbt clean`
 # In this example config, we tell dbt to build all models in the example/
 # directory as views. These settings can be overridden in the individual model
 # files using the `{{ config(...) }}` macro.
+
+# Conceito Aplicado: Configuração Global (Idempotência e Storage)
+# Garantia de otimizações de Storage (como format Delta) sejam aplicadas nativamente
 models:
   futebol_analytics:
-    # Config indicated by + and applies to all files under models/example/
-    example:
-      +materialized: view
+    # Config Global para todos os modelos que criarmos
+    +file_format: delta
+
+    # Podemos separar a lógica em pastas
+    staging:
+      +materialized: view # Staging é apenas o ponteiro para a Silver
+    marts:
+      +materializade: increment # Dimensões e fatos farão Upsert Automático
+      +incremental_strategy: merge
