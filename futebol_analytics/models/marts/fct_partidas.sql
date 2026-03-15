@@ -1,11 +1,14 @@
--- Tabela Fato e Data Skipping
--- Conceito Aplicado: Otimização de Leitura (ZORDER) injetada diretamente via propriedades do
--- dbt (post-hook ou claúsulas específicas do adaptador Databricks). O cálculo das SKs é refeito
--- para manter o acoplamento fraco e evitar Shuffle de JOINs desnecessários
+/*
+Autor: Andrey Henrique
+Tabela Fato e Data Skipping
+Conceito Aplicado: Otimização de Leitura (ZORDER) injetada diretamente via propriedades do
+dbt (post-hook ou claúsulas específicas do adaptador Databricks). O cálculo das SKs é refeito
+para manter o acoplamento fraco e evitar Shuffle de JOINs desnecessários
+Data_Utilizacao: 2026-03-10
+*/
 
 {{ config(
     unique_key='match_sk'
-    zorder=['match_season_year', 'home_team_sk']
 ) }}
 
 WITH source_data AS (
