@@ -24,7 +24,7 @@ jobs:
         # Cria a pasta oculta e o arquivo de conexao dentro da maquina virtual do GitHub
         run: |
           mkdir -p ~/.dbt
-          echo "workspace_project:
+          echo "futebol_analytics:
             target: dev
             outputs:
               dev:
