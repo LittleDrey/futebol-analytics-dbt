@@ -34,6 +34,7 @@ jobs:
                 host: ${{ secrets.DATABRICKS_HOST }}
                 http_path: ${{ secrets.DATABRICKS_HTTP_PATH }}
                 token: ${{ secrets.DATABRICKS_TOKEN }}
+                auth_type: pat
                 threads: 4" > ~/.dbt/profiles.yml
 
       - name: Install Dependencies
