@@ -41,5 +41,5 @@ models:
     staging:
       +materialized: view # Staging é apenas o ponteiro para a Silver
     marts:
-      +materializade: increment # Dimensões e fatos farão Upsert Automático
+      +materialized: increment # Dimensões e fatos farão Upsert Automático
       +incremental_strategy: merge
