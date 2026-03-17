@@ -8,6 +8,7 @@ Data_Utilizacao: 2026-03-10
 */
 
 {{ config(
+    materialized='incremental',
     unique_key='match_sk'
 ) }}
 
