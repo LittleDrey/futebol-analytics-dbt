@@ -33,7 +33,10 @@ source_events AS (
 
 hashed_and_casted AS (
     SELECT
-        -- 1. Chave Primária (Herdada da Silver, mantendo a tipagem INT)
+        -- 1. Chave Primária (Geração da SK para cumprir o contrato do dbt e modelagem dimensional)
+        md5(cast(event_sk as string)) AS event_sk,
+        
+        -- Chave de Negócio (Rastreabilidade com a camada Silver)
         cast(event_sk as int) AS event_src_id,
 
         -- 2. Foreign Keys para Dimensões (Transformação das chaves de negócio em SKs do Tipo String)
@@ -58,7 +61,7 @@ hashed_and_casted AS (
         current_timestamp() AS gold_ingestion_date
 
         -- Nota de Arquitetura:
-        -- Colunas: 'team_name', 'player_name', 'assist_player_name' e 'source_file' foram intecionalmente omitidas
+        -- Colunas: 'team_name', 'player_name', 'assist_player_name' e 'source_file' foram intencionalmente omitidas
         -- O modelo dimensional exige que descrições residam apenas nas dimensões para garantir performance analítica
 
     FROM source_events
