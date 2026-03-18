@@ -12,8 +12,8 @@ from cosmos import DbtTaskGroup, ProjectConfig, ProfileConfig, ExecutionConfig
 from cosmos.profiles import DatabricksTokenProfileMapping
 
 # 1. Mapeamento Físico dentro do Contâiner Docker
-DBT_PROJECT_PATH = "/usr/local/airflow/dbt/futebol_analytics"
-DBT_EXECUTABLE_PATH = "/usr/local/airflow/dags/dbt/futebol_analytics"
+DBT_PROJECT_PATH = "/usr/local/airflow/dags/dbt/futebol_analytics" # Caminho para os arquivos do projeto (Pasta Espelhada)
+DBT_EXECUTABLE_PATH = "/usr/local/airflow/dbt_venv/bin/dbt" # Caminho para o programa do dbt (Ambiente Virtual isolado no dockerfile)
 
 # 2. Configuração de Perfil (Conexão Segura com Databricks via Airflow Connections)
 profile_config = ProfileConfig(
@@ -21,7 +21,7 @@ profile_config = ProfileConfig(
     target_name="dev",
     profile_mapping=DatabricksTokenProfileMapping(
         conn_id="databricks_default",
-        profile_args={"schema: gold"},
+        profile_args={"schema": "gold"},
     )
 )
 

@@ -9,3 +9,5 @@ airflow-webserver.pid
 webserver_config.py
 airflow.cfg
 airflow.db
+# Ignora a cópia local do projeto dbt para evitar duplicidade no repositório
+dags/dbt/futebol_analytics/

@@ -1,5 +1,5 @@
 # 1. Usamos a imagem '-base' para desativar os gatilhos ONBUILD e assumir o controle
-FROM quay.io/astronomer/astro-runtime:12.6.0-base
+FROM quay.io/astronomer/astro-runtime:13.5.1-base
 
 # 2. Varoáveis Globais de Bypass para o PIP
 ENV PIP_TRUSTED_HOST="pypi.org files.pythonhosted.org pip.astronomer.io" 
