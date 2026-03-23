@@ -1,0 +1,18 @@
+# Autor? Andrey Henrique
+# Mapeamento da Camada Silver (Origem dos Dados)
+# Conceito Aplicado: Data Lineage e Abstração de Dependências
+
+version: 2
+
+sources:
+  - name: silver
+    catalog: workspace_project # Apontamento para o Unity Catalog
+    schema: silver
+    description: "Camada Silver contendo dados normalizados, tipados e higienizados"
+    tables:
+      - name: times
+      - name: torneios
+      - name: estadios
+      - name: jogadores
+      - name: partidas
+      - name: eventos

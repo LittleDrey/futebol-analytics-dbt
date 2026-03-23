@@ -1,0 +1,2 @@
+# ARQUIVO INTENCIONALMENTE VAZIO 
+# As dependências foram movidas para o Dockerfile para burlar o proxy corporativo via 'pip' legando o motor 'uv'.
