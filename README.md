@@ -3,7 +3,7 @@
 > Um projeto de Engenharia de Dados End-to-End aplicando os conceitos fundamentais do livro *"Fundamentals of Data Engineering"* (Joe Reis & Matt Housley) aliado a práticas modernas de Analytics Engineering e Orquestração de Grafos.
 
 ## 🎯 Objetivo do Projeto
-Construir um pipeline de dados robusto, escalável e moderno para processar dados de futebol (jogadores, partidas, torneios, eventos, estádios), traduzindo a teoria de engenharia de dados em prática real utilizando **Databricks**, **Delta Lake**, **dbt (Data Build Tool)** e **Apache Airflow**.
+Construir um pipeline de dados robusto, escalável e moderno para processar dados de futebol (jogadores, partidas, torneios, eventos, estádios, times), traduzindo a teoria de engenharia de dados em prática real utilizando **Databricks**, **Delta Lake**, **dbt (Data Build Tool)** e **Apache Airflow**.
 
 O projeto segue a arquitetura **Medallion** (Bronze, Silver, Gold), com foco em qualidade de dados, governança, otimização de armazenamento e entrega de valor analítico direto para o negócio (BI).
 
@@ -100,4 +100,4 @@ A excelência técnica do pipeline exige que o dado seja facilmente descoberto:
 
 1. **Documentação Modular:** Metadados, tipagem e testes documentados rigorosamente nos arquivos `.yml` (separação de responsabilidades).
 2. **Data Catalog Interativo:** Compilação dos metadados (`dbt docs generate`) e exposição da interface gráfica (`dbt docs serve`) para visualização do *Lineage Graph* ponta a ponta.
-3. **Padrão de Versionamento:** Utilização do Git Flow (branches isoladas para `feat/`, `docs/`) e *Conventional Commits* garantindo histórico rastreável e aderência a práticas de integração contínua (CI/CD).
+3. **Padrão de Versionamento:** Utilização do Git Flow (branches isoladas para `feat/`, `docs/`, `chore/`, `fix/`) e *Conventional Commits* garantindo histórico rastreável e aderência a práticas de integração contínua (CI/CD).
