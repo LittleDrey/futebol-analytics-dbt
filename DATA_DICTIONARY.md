@@ -131,3 +131,27 @@ Dimensão catalogando as edições dos campeonatos. Opera sob o padrão **SCD Ti
 | `is_current_season`| Boolean | Flag de controle indicando se a temporada é a vigente no momento. |
 | `source_file` | String | Caminho do arquivo de origem. |
 | `gold_ingestion_date` | Timestamp | Data de materialização na camada Gold. |
+
+---
+
+### 7. Tabela: `agg_classificacao_campeonato` (One Big Table / Analytics)
+Tabela agregada de consumo (OBT) materializada na camada Gold. Contém o ranqueamento analítico pré-calculado por torneio e temporada. Projetada para ingestão direta no Power BI (Import/DirectQuery), transferindo o custo computacional de regras de negócio (pontos, saldo e posições) do DAX para o Data Warehouse.
+
+| Coluna | Tipo | Descrição |
+| :--- | :--- | :--- |
+| `tournament_sk` | String | Foreign Key (MD5) do torneio/temporada. Mantida para filtros de contexto cruzado no BI. |
+| `match_season_year` | Integer | Ano base da temporada correspondente aos resultados. |
+| `team_fk` | String | Foreign Key (MD5) identificadora do clube. |
+| `team_name` | String | Atributo dimensional denormalizado: Nome oficial do clube. |
+| `season_start` | Date | Data oficial de abertura do campeonato. |
+| `season_end` | Date | Data oficial de encerramento do campeonato. |
+| `is_current_season`| Boolean | Flag analítica indicando se a temporada é a vigente. |
+| `matches_played` | Integer | Métrica Agregada: Contagem total de partidas disputadas pelo clube na temporada. |
+| `wins` | Integer | Métrica Agregada: Total de vitórias (Peso: 3 pontos). |
+| `draws` | Integer | Métrica Agregada: Total de empates (Peso: 1 ponto). |
+| `losses` | Integer | Métrica Agregada: Total de derrotas (Peso: 0 pontos). |
+| `total_goals_scored` | Integer | Métrica Agregada: Total de gols marcados (Gols Pró). |
+| `total_goals_conceded`| Integer | Métrica Agregada: Total de gols sofridos (Gols Contra). |
+| `goal_difference` | Integer | KPI de Desempate: Saldo de gols (Pró - Contra). |
+| `total_points` | Integer | KPI Principal: Somatório oficial de pontos conquistados no campeonato. |
+| `championship_position`| Integer | Inteligência Analítica: Posição oficial do clube na tabela, rankeada dinamicamente via Window Function respeitando os critérios de desempate de negócio. |
