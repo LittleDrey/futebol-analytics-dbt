@@ -1,11 +1,10 @@
 /* Autor: Andrey Henrique
-Objetivo/Finalide: Garantir que o pipeline de integração contínua 
-(Github Actions/Gitlab CI) valide o código de forma previsível
+Objetivo/Finalidade: Garantir que o pipeline de integração contínua (Github Actions/Gitlab CI) valide o código de forma previsível
 Impacto: Redução drástica da superfície de erros
-Data_Utilizacao: 2026-03-12
+Data_Utilizacao: 2026-03-18
+Ganhos Reais: Refatoração para preservar as nomenclaturas originais das chaves de negócio (Business Keys) vindas da camada Silver.
 */
 
-SQL
 -- macros/build_scd1_dimension.sql
 {% macro build_scd1_dimension(source_table, business_key, surrogate_key) %}
 
@@ -18,13 +17,10 @@ hash_sk AS (
         -- 1. Gera a SK de forma determinística
         md5(cast({{ business_key }} as string)) AS {{ surrogate_key }},
 
-        -- 2. Renomeia a Chave Original para o padrão de Rastreabilidade
-        {{ business_key }} AS {{ source_table }}_src_id,
+        -- 2. Traz todas as colunas da Silver, EXCETO a SK que já veio da origem
+        * EXCEPT ({{ surrogate_key }}),
 
-        -- 3. Traz todas as colunas da Silver, exceto a chave original que já foi renomeada
-        * EXCEPT ({{ business_key }}, {{ surrogate_key }}),
-
-        -- 4. Injeta metadados de auditoria
+        -- 3. Injeta metadados de auditoria da camada Gold
         current_timestamp() AS gold_ingestion_date
     FROM source_data
 )

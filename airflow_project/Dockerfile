@@ -1,6 +1,19 @@
 # 1. Usamos a imagem '-base' para desativar os gatilhos ONBUILD e assumir o controle
 FROM quay.io/astronomer/astro-runtime:13.5.1-base
 
+# 1. Elevação de privilégio para instalação de pacotes no S.O.
+USER root
+
+# 2. Atualização dos repositórios e instalação forçada do Git
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends git && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+# 3. Rebaixamento de privilégio para manter a segurança do contêiner (Princípio do Menor Privilégio)
+USER astro
+
+
 # 2. Varoáveis Globais de Bypass para o PIP
 ENV PIP_TRUSTED_HOST="pypi.org files.pythonhosted.org pip.astronomer.io" 
 ENV ASTRO_USE_UV="false"
