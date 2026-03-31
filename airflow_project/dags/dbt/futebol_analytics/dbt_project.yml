@@ -22,6 +22,12 @@ clean-targets:         # directories to be removed by `dbt clean`
   - "target"
   - "dbt_packages"
 
+# -------------------------------------------------------------------------
+# GOVERNANÇA DE INFRAESTRUTURA: Ativação do motor V2 do Databricks
+# Resolve erros de Schema Drift (DELTA_SCHEMA_CHANGE_SINCE_ANALYSIS)
+# -------------------------------------------------------------------------
+flags:
+  use_materialization_v2: true
 
 # Configuring models
 # Full documentation: https://docs.getdbt.com/docs/configuring-models
@@ -41,5 +47,5 @@ models:
     staging:
       +materialized: view # Staging é apenas o ponteiro para a Silver
     marts:
-      +materialized: increment # Dimensões e fatos farão Upsert Automático
+      +materialized: incremental # Dimensões e fatos farão Upsert Automático
       +incremental_strategy: merge
