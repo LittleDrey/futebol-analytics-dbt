@@ -11,3 +11,9 @@ logs/
 # Arquivos de Ambiente (Segurança)
 .env
 profiles.yml
+
+# -------------------------------------------------------------------------
+# GOVERNANÇA: Exceção para o projeto dbt embutido no Astronomer Cosmos
+# -------------------------------------------------------------------------
+!airflow_project/dags/dbt/
+!airflow_project/dags/dbt/**
