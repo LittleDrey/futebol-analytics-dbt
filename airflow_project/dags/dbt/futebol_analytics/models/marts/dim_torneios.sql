@@ -17,7 +17,11 @@ WITH source_data AS (
 hashed_sk AS (
     SELECT
         -- 1. Chave Determínistica Composta (ID + Temporada/Ano) para garantir Unicidade
-        md5(concat_ws('||', cast(tournament_id as string), cast(season_year as string))) AS tournament_sk,
+        -- Dentro da CTE de construção na dim_torneios
+        md5(concat_ws('||', 
+            coalesce(cast(tournament_id as string), ''), 
+            coalesce(cast(season_year as string), '')
+        )) AS tournament_sk,
 
         -- 2. Chave de Negócio
         tournament_id AS tournament_scr_id,

@@ -23,7 +23,11 @@ fact_build AS (
         md5(cast(home_team_id as string)) AS home_team_sk,
         md5(cast(away_team_id as string)) AS away_team_sk,
         md5(cast(venue_id as string)) AS venue_sk,
-        md5(concat_ws('||', cast(tournament_id as string), cast(match_season_year as string))) AS tournament_sk,
+        -- Dentro da CTE fact_build na fct_partidas
+        md5(concat_ws('||', 
+            coalesce(cast(tournament_id as string), ''), 
+            coalesce(cast(match_season_year as string), '')
+        )) AS tournament_sk,
         match_date,
         match_season_year,
         match_round,
