@@ -52,14 +52,14 @@ models:
     description: "Fato Secundário contendo eventos de partidas"
     columns:
       - name: event_sk
-        data_type: int
+        data_type: string
         description: "PK Hash do Evento"
         tests:
           - unique
           - not_null
 
       - name: match_sk
-        data_type: int
+        data_type: string
         description: "FK Hash para Fato Principal de Partidas"
         tests:
           - not_null
@@ -69,7 +69,7 @@ models:
                 field: match_sk
 
       - name: team_sk
-        data_type: int
+        data_type: string
         description: "FK para Dimensão de Times"
         tests:
           - not_null
@@ -79,7 +79,7 @@ models:
                 field: team_sk
 
       - name: player_sk
-        data_type: int
+        data_type: string
         description: "FK para Dimensão de Jogadores"
         tests:
           # Removido 'not_null': Eventos podem ser do time/técnico
@@ -91,7 +91,7 @@ models:
                   severity: warn # <--- Permite que o pipeline continue, gerando apenas um alerta
 
       - name: assist_player_sk
-        data_type: int
+        data_type: string
         description: "FK para Dimensão de Jogadores (Assistente)"
         tests:
           # Removido 'not_null': Nem todo evento tem assistência
@@ -132,6 +132,14 @@ models:
         data_type: string
         description: "Comentários Adicionais Sobre o Evento"
 
+      - name: match_date
+        data_type: date
+        description: "Data em que o evento ocorreu (Herdado da Partida)"
+
+      - name: match_season_year
+        data_type: int
+        description: "Ano da temporada do evento"
+
       - name: silver_ingestion_date
         data_type: timestamp
         description: "Data de Ingestão na Camada Silver"
@@ -144,15 +152,15 @@ models:
     description: "Dimensão de Jogadores com detalhes dos Atletas"
     columns:
       - name: player_sk
-        data_type: int
+        data_type: string
         description: "PK Hash do Jogador"
         tests:
           - unique
           - not_null
 
-      - name: player_id
-        data_type: int
-        description: "ID Original do Jogador"
+      - name: player_src_id
+        data_type: string
+        description: "ID Original do Jogador (Business Key da Silver)"
         tests:
           - not_null
           - unique
@@ -197,14 +205,6 @@ models:
         data_type: int
         description: "Peso do Jogador em Quilogramas"
 
-      - name: source_file
-        data_type: string
-        description: "Nome do Arquivo de Origem dos Dados do Jogador"
-
-      - name: ingestion_date
-        data_type: timestamp
-        description: "Data de Ingestão dos Dados do Jogador"
-
       - name: player_nationality
         data_type: string
         description: "Nacionalidade do Jogador"
@@ -217,7 +217,7 @@ models:
     description: "Dimensão de Estádios com detalhes dos Palcos de Jogo"
     columns:
       - name: stadium_sk
-        data_type: int
+        data_type: string
         description: "PK Hash do Estádio"
         tests:
           - unique
