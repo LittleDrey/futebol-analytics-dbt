@@ -1,9 +1,8 @@
 /*
 Autor: Andrey Henrique
-Objetivo/Finalidade: Tabela de consumo agregada (OBT) para cálculo da classificação do campeonato.
-Data_Utilizacao: 2026-03-13
-Ganhos Reais: Pré-processamento integral no Databricks. A tabela já entrega as chaves e as descrições, permitindo
-importação direta (DirectQuery ou Import Mode) no PBI sem necessidade de modelagem adicional no DAX.
+Objetivo/Finalidade: Tabela de consumo agregada (OBT) para cálculo da classificação do campeonato, incluindo histórico recente (Form).
+Data_Utilizacao: 2026-04-01
+Ganhos Reais: Pré-processamento integral no Databricks. Incorporação de Lógica de Form (Últimos 5 jogos) via Spark SQL para suportar Dataviz de alta performance sem sobrecarregar motor DAX.
 */
 
 {{ config(
@@ -15,6 +14,7 @@ WITH match_results AS (
     SELECT
         tournament_sk,
         match_season_year,
+        match_date, -- COLUNA NECESSÁRIA PARA ORDENAR OS ÚLTIMOS JOGOS
         home_team_sk AS team_fk,
         home_team_goals AS goals_scored,
         away_team_goals AS goals_conceded,
@@ -22,7 +22,12 @@ WITH match_results AS (
             WHEN home_team_goals > away_team_goals THEN 3
             WHEN home_team_goals = away_team_goals THEN 1
             ELSE 0
-        END AS points
+        END AS points,
+        CASE
+            WHEN home_team_goals > away_team_goals THEN 'V'
+            WHEN home_team_goals = away_team_goals THEN 'E'
+            ELSE 'D'
+        END AS result_char
     FROM {{ ref('fct_partidas') }}
 
     UNION ALL
@@ -31,6 +36,7 @@ WITH match_results AS (
     SELECT 
         tournament_sk,
         match_season_year,
+        match_date, -- COLUNA NECESSÁRIA PARA ORDENAR OS ÚLTIMOS JOGOS
         away_team_sk AS team_fk,
         away_team_goals AS goals_scored,
         home_team_goals AS goals_conceded,
@@ -38,7 +44,12 @@ WITH match_results AS (
             WHEN away_team_goals > home_team_goals THEN 3
             WHEN away_team_goals = home_team_goals THEN 1
             ELSE 0
-        END AS points
+        END AS points,
+        CASE
+            WHEN away_team_goals > home_team_goals THEN 'V'
+            WHEN away_team_goals = home_team_goals THEN 'E'
+            ELSE 'D'
+        END AS result_char
     FROM {{ ref('fct_partidas') }}
 ),
 
@@ -63,8 +74,45 @@ team_aggregation AS (
         team_fk
 ),
 
+form_ranking AS (
+    -- 4. Motor do Histórico: Numera os jogos do mais recente para o mais antigo
+    SELECT 
+        tournament_sk,
+        match_season_year,
+        team_fk,
+        result_char,
+        ROW_NUMBER() OVER(
+            PARTITION BY tournament_sk, match_season_year, team_fk 
+            ORDER BY match_date DESC
+        ) AS rn
+    FROM match_results
+),
+
+recent_form_aggregated AS (
+    -- 5. Isola os Top 5 mais recentes e concatena em ordem cronológica (antigo→recente)
+    -- Usa struct + sort_array para garantir ordenação determinística no Spark SQL
+    -- ORDER BY em subquery sem LIMIT é ignorado pelo otimizador — esta abordagem é segura
+    SELECT
+        tournament_sk,
+        match_season_year,
+        team_fk,
+        array_join(
+            transform(
+                sort_array(collect_list(struct(rn, result_char)), false),
+                x -> x.result_char
+            ),
+            ''
+        ) AS ultimos_5
+    FROM form_ranking
+    WHERE rn <= 5
+    GROUP BY
+        tournament_sk,
+        match_season_year,
+        team_fk
+),
+
 enriched_aggregation AS (
-    -- 4. Enriquecimento Dimensional (Join com Times e Torneios)
+    -- 6. Enriquecimento Dimensional (Join com Times, Torneios e Form Recente)
     SELECT
         agg.tournament_sk,
         agg.match_season_year,
@@ -80,19 +128,22 @@ enriched_aggregation AS (
         agg.total_goals_scored,
         agg.total_goals_conceded,
         agg.goal_difference,
-        agg.total_points
+        agg.total_points,
+        rf.ultimos_5
     FROM team_aggregation agg
     LEFT JOIN {{ ref('dim_times') }} dt 
         ON agg.team_fk = dt.team_sk
-    -- CORREÇÃO: Injeção da granularidade temporal no relacionamento
     LEFT JOIN {{ ref('dim_torneios') }} dtor 
         ON agg.tournament_sk = dtor.tournament_sk
-        AND agg.match_season_year = dtor.season_year -- Ajuste para o nome exato da coluna de ano na dim_torneios
+        AND agg.match_season_year = dtor.season_year
+    LEFT JOIN recent_form_aggregated rf
+        ON agg.tournament_sk = rf.tournament_sk
+        AND agg.match_season_year = rf.match_season_year
+        AND agg.team_fk = rf.team_fk
 ),
 
 ranked_classification AS (
-    -- 5. Inteligência Analítica: Cálculo da Posição na Tabela
-    -- O critério de desempate clássico: Pontos > Vitórias > Saldo de Gols > Gols Pró
+    -- 7. Inteligência Analítica: Cálculo da Posição na Tabela (Com critério oficial de desempate)
     SELECT 
         *,
         RANK() OVER(

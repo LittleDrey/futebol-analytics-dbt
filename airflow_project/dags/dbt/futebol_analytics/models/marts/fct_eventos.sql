@@ -1,9 +1,9 @@
 /*
 Autor: Andrey Henrique
 Objetivo/Finalidade: Consolidar a tabela fato de eventos das partidas, estabelecendo chaves relacionais para as dimensões
-Data_Utilizacao: 2026-03-12
-Ganhos Reais: Criação de uma chave composta determinística (event_sk) para garantir idempotência em reprocessamento e modelagem em Star Schema
-(integração com fct_partidas, dim_jogadores)
+Data_Utilizacao: 2026-04-01
+Ganhos Reais: Criação de chave composta determinística (event_sk) e desnormalização do contexto temporal (match_date) 
+diretamente na Fato, garantindo um Star Schema perfeito e eliminando filtros bidirecionais no BI.
 */
 
 {{ config (
@@ -23,12 +23,21 @@ WITH max_date AS (
 ),
 
 source_events AS (
-    SELECT s.*FROM {{ source('silver', 'eventos') }} s
+    SELECT s.* FROM {{ source('silver', 'eventos') }} s
     CROSS JOIN max_date m
     {% if is_incremental() %}
         -- A cláusula WHERE agora compara com uma coluna direta, sem funções de agregação
         WHERE s.ingestion_date > m.max_ingestion_date
     {% endif %}
+),
+
+fato_partidas AS (
+    -- NOVA CTE: Captura do contexto temporal da Fato Principal
+    SELECT 
+        cast(match_src_id as int) AS match_src_id,
+        match_date,
+        match_season_year
+    FROM {{ ref('fct_partidas') }}
 ),
 
 hashed_and_casted AS (
@@ -65,6 +74,17 @@ hashed_and_casted AS (
         -- O modelo dimensional exige que descrições residam apenas nas dimensões para garantir performance analítica
 
     FROM source_events
+),
+
+eventos_enriquecidos AS (
+    -- NOVA CTE: Cruzamento e tipagem final do contexto temporal
+    SELECT 
+        h.*,
+        cast(p.match_date as date) AS match_date,
+        cast(p.match_season_year as int) AS match_season_year
+    FROM hashed_and_casted h
+    LEFT JOIN fato_partidas p
+        ON h.match_src_id = p.match_src_id
 )
 
-SELECT * FROM hashed_and_casted
+SELECT * FROM eventos_enriquecidos
